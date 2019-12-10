@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8' />
+<title>book map 3</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.3.2/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.3.2/mapbox-gl.css' rel='stylesheet' />
+<style>
+
+body { 
+margin:0; 
+padding:0; 
+-webkit-font-smoothing: antialiased;
+}
+
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+#title {
+font-family: "Baskerville";
+font-size: 40px;
+text-align: center;
+color: rgb(8, 34, 120);
+}
+
+#subtitle {
+font-family: "Baskerville";
+font-size: 20px;
+text-align: center;
+color: rgb(8, 34, 120);
+}
+
+.btn {
+display: inline-block;
+position: relative;
+margin: 10px auto;
+width: 200px;
+height: 42px;
+padding: 10px;
+border: none;
+border-radius: 3px;
+font-family: "Baskerville";
+font-size: 20px;
+text-align: center;
+color: #fff;
+background:rgb(8, 34, 120);
+}
+
+.btn:hover {opacity: 0.6}
+
+.btn-group {
+margin: auto;
+display: flex;
+flex-direction:row;
+justify-content: center;
+}
+
+.map {
+  border-left: 1px solid #fff;
+  position: absolute;
+  left: 25%;
+  width: 75%;
+  height: 75%;
+  top: 22%;
+  bottom: 0;
+}
+
+.sidebar {
+  position: absolute;
+  width: 25%;
+  height: 75%;
+  top: 22%;
+  left: 0;
+  overflow: hidden;
+  border-right: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.pad2 {
+  padding: 10px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.mapboxgl-popup-content {
+  font: 400 12px/20px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+  background-color: white;
+  padding: 0px;
+  box-shadow:0 4px 8px 0 #383836, 0 6px 10px 0 #383836;
+}
+
+h1 {
+  font-size: 22px;
+  margin: 0;
+  font-weight: 400;
+  line-height: 20px;
+  padding: 20px 2px;
+}
+
+#image {
+padding: 15px;
+height: 200px;
+position:relative; 
+object-fit:cover;
+}
+
+#booktitle {
+color:black;
+font-family: "Baskerville";
+font-weight: normal;
+position: relative; 
+font-size: 28px;
+line-height: 35px;
+margin: 10px 15px 5px 15px;
+}
+
+#bookauthor {
+color:black;
+font-size: 16px;
+font-weight: bolder;
+position: relative; 
+border-spacing: 0px;
+padding: 0px;
+margin: 10px 15px 5px 15px;
+}
+
+#country {
+color:black;
+font-weight: normal;
+font-size: 12px;
+text-transform: uppercase;
+border-spacing: 2px;
+position: relative; 
+margin: 10px 15px 15px 15px;
+}
+
+</style>
+</head>
+
+<body>
+ 
+<h1 id='title'>Book Map</h1>
+<h3 id='subtitle'>Zoom to a Region</h3>
+<br>
+<div class=btn-group>
+  <button class="btn" id='move1'>North America</button>
+  <button class="btn" id='move2'>South America</button>
+  <button class="btn" id='move3'>Europe</button>
+  <button class="btn" id='move4'>Africa</button>
+  <button class="btn" id='move5'>Asia</button>
+  <button class="btn" id='move6'>Middle East</button>
+</div>
+<br>
+
+<div class='sidebar pad2'>
+    <div class='heading'>
+        <h1>My Favorites</h1>
+      </div>
+      <div id='listings' class='listings'></div>
+</div>
+
+<div id='map' class='map pad2'></div>
+
+<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.4.2/mapbox-gl-geocoder.min.js'></script>
+<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.4.2/mapbox-gl-geocoder.css' type='text/css' />
+<!-- Promise polyfill script required to use Mapbox GL Geocoder in IE 11 -->
+<script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js"></script>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoidGVzc2hzMTEiLCJhIjoiY2sxY2xkZTBpMnJvYzNjbmltNG85dnZxbSJ9.Y_wMLXc8EZ36g_2PE6ltsw';
+var map = new mapboxgl.Map({
+container: 'map',
+style: 'mapbox://styles/tesshs11/ck3tci3vk09g61clihhpms624', 
+center: [-23.535285, 25.499325],
+zoom: 2
+});
+
+// Add a search bar
+map.addControl(new MapboxGeocoder({
+accessToken: mapboxgl.accessToken,
+mapboxgl: mapboxgl
+}));
+
+// Add a popup
+map.on('click', function(e) {
+var features = map.queryRenderedFeatures(e.point, {
+layers: ['book-map-data-3-1'] // replace this with the name of the layer
+});
+
+if (!features.length) {
+return;
+}
+
+var feature = features[0];
+
+var popup = new mapboxgl.Popup({ 
+    offset: [11, 10],
+    closeButton: false,
+    closeOnClick: true,
+    })
+.setLngLat(feature.geometry.coordinates)
+.setHTML(
+'<div class="popup-container">' +
+  '<div class="imageholder">' + 
+    '<img id="image" src="' + feature.properties.image + '">' + 
+  '</div>' +
+
+  '<div class="textholder">' +
+    '<h2 id="booktitle">' + feature.properties.title + '</h2>' +
+    '<h3 id="bookauthor">' + feature.properties.author + '</h3>' +
+    '<h4 id="country">' + feature.properties.country + '</h4>' + 
+  '</div>' +
+'</div>'
+)
+.addTo(map);
+});
+
+// Change the cursor to a pointer when the mouse is over the places layer.
+map.on('mouseenter', 'book-map-data-3-1', function () {
+map.getCanvas().style.cursor = 'pointer';
+});
+ 
+// Change it back to a pointer when it leaves.
+map.on('mouseleave', 'book-map-data-3-1', function () {
+map.getCanvas().style.cursor = '';
+});
+
+// Zoom to North America
+document.getElementById('move1').addEventListener('click', function() {
+map.fitBounds([[
+-93.001447, 60.259427
+], [
+-78.201629, 6.674943
+]]);
+});
+
+// Zoom to South America
+document.getElementById('move2').addEventListener('click', function() {
+map.fitBounds([[
+-68.388617, 8.562841
+], [
+-70.294830, -50.913352
+]]);
+});
+
+// Zoom to Europe
+document.getElementById('move3').addEventListener('click', function() {
+map.fitBounds([[
+18.700050, 67.113056
+], [
+16.015873, 36.946915
+]]);
+});
+
+// Zoom to Africa
+document.getElementById('move4').addEventListener('click', function() {
+map.fitBounds([[
+10.406025, 35.516237
+], [
+23.519491, -32.914988
+]]);
+});
+
+// Zoom to Asia
+document.getElementById('move5').addEventListener('click', function() {
+map.fitBounds([[
+103.367171, 45.923636
+], [
+94.714321, 6.961217
+]]);
+});
+
+// Zoom to Middle East
+document.getElementById('move6').addEventListener('click', function() {
+map.fitBounds([[
+35.360932, 42.106821
+], [
+33.848056, 11.001309
+]]);
+});
+ 
+</script>
+ 
+</body>
+</html> 
